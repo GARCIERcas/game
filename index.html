@@ -22,21 +22,18 @@
       height: 238px;
     }
 
-    /* Внешний серый круг */
     .outer-circle {
       position: absolute;
       top: 0;
       left: 0;
     }
 
-    /* Внутренний круг (прогресс) */
     .white-area {
       position: absolute;
       top: 0;
       left: 0;
     }
 
-    /* Маленький зелёный круг */
     .dot {
       position: absolute;
       width: 46px;
@@ -45,7 +42,6 @@
       border-radius: 50%;
     }
 
-    /* Экран проигрыша */
     .game-over {
       position: absolute;
       top: 0;
@@ -69,7 +65,6 @@
       visibility: visible;
     }
 
-    /* Счетчик */
     .score {
       position: absolute;
       top: 50%;
@@ -80,57 +75,84 @@
       font-weight: bold;
     }
 
+    @media (max-width: 768px) {
+      .container {
+        width: 180px;
+        height: 180px;
+      }
+
+      .dot {
+        width: 36px;
+        height: 36px;
+      }
+
+      .game-over {
+        font-size: 30px;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .score {
+        font-size: 24px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        width: 140px;
+        height: 140px;
+      }
+
+      .dot {
+        width: 26px;
+        height: 26px;
+      }
+
+      .game-over {
+        font-size: 24px;
+      }
+
+      .score {
+        font-size: 20px;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Внешний серый круг -->
     <svg class="outer-circle" xmlns="http://www.w3.org/2000/svg" width="238" height="238" viewBox="0 0 238 238">
       <circle cx="119" cy="119" r="95" fill="none" stroke="#333333" stroke-width="47"></circle>
     </svg>
-
-    <!-- Внутренний круг (прогресс) -->
     <svg class="white-area" xmlns="http://www.w3.org/2000/svg" width="238" height="238" viewBox="0 0 238 238">
       <circle cx="119" cy="119" r="95" fill="none" stroke="#D9D9D9" stroke-width="47" 
         stroke-dasharray="565.48" stroke-dashoffset="511" stroke-linecap="round" transform="rotate(-90 119 119)"></circle>
     </svg>
-
-    <!-- Зелёная точка -->
     <div class="dot"></div>
-
-    <!-- Счетчик -->
     <div class="score" id="score">0</div>
   </div>
 
-  <!-- Экран проигрыша -->
-  <div class="game-over" id="gameOverScreen">
-    You lose
-  </div>
+  <div class="game-over" id="gameOverScreen">You lose</div>
 
   <script>
     const dot = document.querySelector('.dot');
     const whiteArea = document.querySelector('.white-area');
-    const radiusOuter = 95; // радиус для внешнего круга
-    const centerX = 119; // Центр по оси X
-    const centerY = 119; // Центр по оси Y
-    let angle = 0; // начальный угол
-    let isDotInWhiteZone = false; // Переменная для отслеживания, находится ли зелёный круг в белой зоне
-    let animationFrameId; // ID для отмены анимации
-    let score = 0; // Начальный счет
+    const radiusOuter = 95;
+    const centerX = 119;
+    const centerY = 119;
+    let angle = 0;
+    let isDotInWhiteZone = false;
+    let animationFrameId;
+    let score = 0;
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-
-    // Экран проигрыша
     const gameOverScreen = document.getElementById('gameOverScreen');
-    const scoreElement = document.getElementById('score'); // Элемент для отображения счета
+    const scoreElement = document.getElementById('score');
 
-    // Функция для проверки цвета пикселя под зелёным кругом
     function isDotInWhiteArea() {
       const radians = angle * Math.PI / 180;
       const dotX = centerX + radiusOuter * Math.cos(radians);
       const dotY = centerY + radiusOuter * Math.sin(radians);
 
-      // Рисуем текущее состояние SVG на Canvas
       canvas.width = 238;
       canvas.height = 238;
       const svgData = new XMLSerializer().serializeToString(whiteArea);
@@ -143,87 +165,62 @@
           const pixel = ctx.getImageData(dotX, dotY, 1, 1).data;
           const color = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
 
-          // Проверяем цвет пикселя
-          if (color === 'rgb(217, 217, 217)') { // Если пиксель под зелёным кругом имеет цвет белой зоны
+          if (color === 'rgb(217, 217, 217)') {
             resolve(true);
           } else {
-            resolve(false); // Если цвет не равен белому, возвращаем false
+            resolve(false);
           }
         };
         img.src = url;
       });
     }
 
-    // Анимация
     function animate() {
-      angle += 2; // Скорость вращения
-      if (angle >= 360) angle = 0; // Возвращаем угол в пределах 360
-
-      // Переводим угол в радианы
+      angle += 2;
+      if (angle >= 360) angle = 0;
       const radians = angle * Math.PI / 180;
-
-      // Рассчитываем позицию зелёного круга
       const x = centerX + radiusOuter * Math.cos(radians) - dot.offsetWidth / 2;
       const y = centerY + radiusOuter * Math.sin(radians) - dot.offsetHeight / 2;
-
-      // Обновляем позицию зелёного круга
       dot.style.left = `${x}px`;
       dot.style.top = `${y}px`;
 
-      // Проверяем, находится ли зелёный круг в белой зоне
       isDotInWhiteArea().then((isInWhiteArea) => {
         if (isInWhiteArea && !isDotInWhiteZone) {
-          isDotInWhiteZone = true; // Зеленый круг внутри белой зоны
-          document.body.addEventListener('click', handleClick); // Добавляем обработчик кликов
+          isDotInWhiteZone = true;
+          document.body.addEventListener('click', handleClick);
         } 
       });
 
-      // Повторяем анимацию
       animationFrameId = requestAnimationFrame(animate);
     }
 
-    // Обработчик кликов
     function handleClick() {
-      // Проверяем, находится ли зелёный круг в белой зоне
       isDotInWhiteArea().then((isInWhiteArea) => {
         if (!isInWhiteArea) {
-          // Если зелёный круг не в белой зоне, останавливаем игру
           cancelAnimationFrame(animationFrameId);
-          showGameOver(); // Показываем экран проигрыша
+          showGameOver();
         } else {
-          // Увеличиваем счет на 2
           score += 2;
-          // Обновляем отображение счета
           scoreElement.textContent = score;
-
-          // Меняем stroke-dashoffset на случайное значение
           const strokeValues = [500, 440, 380, 310];
           const randomStrokeValue = strokeValues[Math.floor(Math.random() * strokeValues.length)];
           whiteArea.querySelector('circle').setAttribute('stroke-dashoffset', randomStrokeValue);
-
-          // Генерация случайного угла поворота для белой зоны
           const randomRotationAngle = Math.floor(Math.random() * 360);
           whiteArea.querySelector('circle').setAttribute('transform', `rotate(${randomRotationAngle} 119 119)`);
         }
       });
     }
 
-    // Функция для отображения экрана проигрыша
     function showGameOver() {
       gameOverScreen.classList.add('visible');
-      document.body.removeEventListener('click', handleClick); // Убираем обработчик кликов
+      document.body.removeEventListener('click', handleClick);
     }
 
-    // Функция для перезагрузки игры
     function reloadGame() {
-      // Перезагружаем страницу
       location.reload();
     }
 
-    // Обработчик кликов на экране проигрыша
     gameOverScreen.addEventListener('click', reloadGame);
-
-    // Запускаем анимацию
     animationFrameId = requestAnimationFrame(animate);
   </script>
 </body>
